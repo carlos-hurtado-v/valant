@@ -1,0 +1,89 @@
+@btn-color: #4CAF50;
+@btn-hover-color: #369636;
+@control-button-size: 50px;
+@font-size: 16px;
+@control-gap: 10px;
+@container-gap: 20px;
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: @container-gap;
+
+  .title {
+    font-weight: bolder;
+    font-size: 18px;
+  }
+
+  .maze-container {
+    display: flex;
+    flex-direction: row;
+    gap: @container-gap;
+    flex-grow: 1;
+
+    .maze {
+      display: grid;
+    }    
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: @control-gap;
+
+    .control-button {
+      display: flex;
+      justify-content: center;
+    }
+
+    .middle-controls {
+      display: flex;
+      gap: @control-gap;
+    }
+  }
+}
+
+.row {
+  display: flex;
+}
+
+.cell {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-weight: bold;
+}
+
+.wall {
+  background-color: #333;
+}
+
+.open,
+.exit {
+  background-color: #fff;
+}
+
+.player {
+  background-color: #4caf50; /* Green background for the player */
+  color: #fff;
+}
+
+.start {
+  background-color: #ffeb3b; /* Yellow background for start position */
+}
+
+.exit {
+  background-color: #f44336; /* Red background for exit */
+}
+
+.hidden {
+  background-color: #666; /* Dark background for hidden cells */
+}

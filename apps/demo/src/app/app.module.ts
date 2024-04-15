@@ -3,23 +3,32 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { LoggingService } from './logging/logging.service';
-import { StuffService } from './stuff/stuff.service';
-import { environment } from '../environments/environment';
-import { ValantDemoApiClient } from './api-client/api-client';
-
-export function getBaseUrl(): string {
-  return environment.baseUrl;
-}
+import { MazeGameComponent } from './components/maze-game/maze-game.component';
+import { MazeListComponent } from './components/maze-list/maze-list.component';
+import { CreateMazeComponent } from './components/create-maze/create-maze.component';
+import { MazeService } from './services/maze.service';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, HttpClientModule],
-  providers: [
-    LoggingService,
-    StuffService,
-    ValantDemoApiClient.Client,
-    { provide: ValantDemoApiClient.API_BASE_URL, useFactory: getBaseUrl },
+  declarations: [AppComponent, MazeGameComponent, MazeListComponent, CreateMazeComponent],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    FormsModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSnackBarModule,
+    BrowserAnimationsModule,
   ],
+  providers: [LoggingService, MazeService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -1,0 +1,17 @@
+<h3>Create New Maze</h3>
+<form (submit)="onSubmit()">
+  <mat-form-field appearance="fill">
+    <mat-label>Maze Name</mat-label>
+    <input matInput [(ngModel)]="mazeName" name="mazeName" required>
+  </mat-form-field>
+
+  <!-- Custom handling for file input -->
+  <div class="file-input-container">
+    <label>Maze File (.mze)</label>
+    <input type="file" (change)="onFileSelected($event)" accept=".mze" id="fileInput">
+  </div>
+  
+  <button mat-raised-button color="primary" type="submit" [disabled]="!file || !mazeName || isBusy">Create Maze</button>
+</form>
+
+<mat-error *ngIf="errorMessage">{{ errorMessage }}</mat-error>
