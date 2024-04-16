@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { LoggingService } from './logging/logging.service';
+import { Component} from '@angular/core';
 import { Maze } from './models/maze.model';
 
 @Component({
@@ -7,15 +6,11 @@ import { Maze } from './models/maze.model';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.less'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent{
 
   selectedMaze: Maze | null = null;
 
-  constructor(private logger: LoggingService) {}
-
-  ngOnInit() {
-    this.logger.log('Welcome to the AppComponent');
-  }
+  constructor() {}
 
   onMazeSelected(maze: Maze): void {
     this.selectedMaze = maze;

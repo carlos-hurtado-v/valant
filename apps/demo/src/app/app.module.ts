@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
-import { LoggingService } from './logging/logging.service';
 import { MazeGameComponent } from './components/maze-game/maze-game.component';
 import { MazeListComponent } from './components/maze-list/maze-list.component';
 import { CreateMazeComponent } from './components/create-maze/create-maze.component';
@@ -28,7 +27,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatSnackBarModule,
     BrowserAnimationsModule,
   ],
-  providers: [LoggingService, MazeService],
+  providers: [MazeService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
