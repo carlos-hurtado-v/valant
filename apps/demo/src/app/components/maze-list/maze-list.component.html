@@ -1,0 +1,20 @@
+<div *ngIf="isLoading">
+  <p>Loading mazes...</p>
+</div>
+
+<ng-container *ngIf="!isLoading">
+  <ng-container *ngIf="mazes$ | async as mazes">
+    <div *ngIf="mazes.length; else noMazesTemplate" class="mazes">
+      <div class="title">Available Mazes</div>
+      <div *ngFor="let maze of mazes" class="maze-item">
+        <button mat-raised-button color="accent" (click)="openMaze(maze)">{{ maze.name }}</button>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #noMazesTemplate>
+    <p>No mazes available.</p>
+  </ng-template>
+</ng-container>
+
+<button mat-raised-button color="primary" (click)="openCreateMazeModal()" style="margin-top: 10px;">Create a maze</button>

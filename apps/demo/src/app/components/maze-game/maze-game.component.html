@@ -1,0 +1,28 @@
+<div *ngIf="maze" class="game-container">
+  <div class="title">{{ maze.name }}</div>
+  <button mat-raised-button color="primary" (click)="startGame()">Start / Reset Game</button>
+  <p>Timer: {{ timerDisplay }}</p>
+
+  <div class="maze-container">
+    <!-- Maze display -->
+    <div class="maze">
+      <div *ngFor="let row of mazeLayout; let i = index" class="row">
+        <span *ngFor="let cell of row; let j = index" [ngClass]="getCellClass(cell, i, j)" class="cell">
+          <!-- Only display cell content if the cell is not 'hidden' -->
+          &nbsp;
+        </span>
+      </div>
+    </div>
+
+    <!-- Navigation controls -->
+    <div class="controls">
+      <div class="control-button up"><button mat-raised-button (click)="move('up')" [disabled]="!isMoveAvailable('up')">Up</button></div>
+      <div class="middle-controls">
+        <div class="control-button left"><button mat-raised-button (click)="move('left')" [disabled]="!isMoveAvailable('left')">Left</button></div>
+        <div class="control-button right"><button mat-raised-button (click)="move('right')" [disabled]="!isMoveAvailable('right')">Right</button></div>
+      </div>
+      <div class="control-button down"><button mat-raised-button (click)="move('down')" [disabled]="!isMoveAvailable('down')">Down</button></div>
+    </div>
+  </div>
+</div>
+<p *ngIf="!maze">No maze selected.</p>

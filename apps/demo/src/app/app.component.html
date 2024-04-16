@@ -1,8 +1,11 @@
-<header class="flex">
-  <img alt="Valant logo" width="150" src="../assets/valant_logo.png" />
-  <h1>Welcome to {{ title }}</h1>
-</header>
-<main>
-  <h2>Hi there</h2>
-  <p>Thanks for being you.</p>
-</main>
+<div class="header">
+  <h1>Valant Maze Game</h1>
+</div>
+<div class="container">
+  <div class="maze-list">
+    <valant-maze-list (selectMaze)="onMazeSelected($event)"></valant-maze-list>
+  </div>
+  <div class="maze-display">
+    <valant-maze-game [maze]="selectedMaze"></valant-maze-game>
+  </div>
+</div>
