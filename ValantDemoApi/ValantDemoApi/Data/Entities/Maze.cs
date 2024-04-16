@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System;
-
 namespace ValantDemoApi.Data.Entities
 {
   public class Maze

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ValantDemoApi.Contracts;
 using ValantDemoApi.Data.Entities;
+using ValantDemoApi.Models;
 
 namespace ValantDemoApi.Controllers
 {
@@ -49,6 +50,22 @@ namespace ValantDemoApi.Controllers
       var created = await _mazeService.CreateMazeAsync(name, rawMazeContent);
 
       return Ok(created);
+    }
+
+    [HttpPost]
+    [Route("moves")]
+    [ProducesResponseType(typeof(MazeMoveResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> GetAvailableMoves([FromBody] PlayerState state)
+    {
+      if (state == null)
+        return BadRequest("Player state is required");
+
+      var moves = await _mazeService.GetAvailableMovesAsync(state);
+      if (moves == null)
+        return BadRequest("Maze not found");
+
+      return Ok(moves);
     }
 
     [HttpGet]

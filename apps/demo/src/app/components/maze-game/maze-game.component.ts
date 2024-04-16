@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Maze } from '../../models/maze.model';
 import { Subscription, interval } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MazeService } from '../../services/maze.service';
 
 @Component({
   selector: 'valant-maze-game',
@@ -9,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./maze-game.component.less'],
 })
 export class MazeGameComponent implements OnChanges {
+
   @Input() maze: Maze | null = null;
   mazeLayout: string[][];
   playerPosition: { x: number; y: number };
@@ -17,8 +19,10 @@ export class MazeGameComponent implements OnChanges {
   gameOn = false;
   timeElapsed: number = 0;
   timerSubscription: Subscription;
+  availableMoves: string[] = [];
+  isBusy = false;
 
-  constructor(private snackbar: MatSnackBar) {}
+  constructor(private snackbar: MatSnackBar, private mazeService: MazeService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.maze?.currentValue) {
@@ -28,10 +32,12 @@ export class MazeGameComponent implements OnChanges {
 
   setupMaze(): void {
     if (this.maze?.definition) {
+      console.log('Setting up maze');
       this.mazeLayout = this.maze.definition
         .split('\n') // Split into rows by newline
         .map((row) => this.cleanRow(row.split(''))); // Clean each row
 
+      // Find the player's starting position and update the maze layout
       this.findStartPosition();
 
       if (this.playerPosition) {
@@ -39,6 +45,27 @@ export class MazeGameComponent implements OnChanges {
       }
     }
   }
+
+  fetchAvailableMoves(): void {
+    if (this.maze && this.playerPosition) {
+      this.isBusy = true;
+      this.mazeService.getAvailableMoves(this.maze.id, this.playerPosition.x, this.playerPosition.y).subscribe({
+        next: (result) => {
+          this.availableMoves = result.moves;
+          if (result.isFinished) {
+            this.gameOn = false;
+            this.snackbar.open('Congratulations! You have reached the exit.', 'YAY!', {
+              duration: 3000
+            });
+          }
+        },
+        error: () => this.snackbar.open('Failed to fetch moves. Please retry.', 'Oops', {
+          duration: 3000
+        }),
+        complete: () => this.isBusy = false
+      });
+    }
+  }  
 
   cleanRow(row: string[]): string[] {
     return row.filter((char) => 'SOEX'.includes(char));
@@ -56,28 +83,28 @@ export class MazeGameComponent implements OnChanges {
   }
 
   resetGame(): void {
-    if (this.timerSubscription) {
+    if (this.timerSubscription)
       this.timerSubscription.unsubscribe();
-    }
+    this.timerSubscription = new Subscription();
     this.gameOn = false;
     this.timerDisplay = '00:00';
     this.timeElapsed = 0;
     this.previousCell = 'S';
-
-    if (this.maze?.definition) {
-      this.setupMaze();
-    }    
+    this.setupMaze();
   }
 
   startGame(): void {
     this.resetGame();
     this.gameOn = true;
-    this.timerSubscription = interval(1000).subscribe((_) => {
-      if (this.gameOn) {
-        this.timeElapsed++;
-        this.timerDisplay = this.formatTime(this.timeElapsed);
-      }
-    });
+    this.timerSubscription.add(
+      interval(1000).subscribe(() => {
+        if (this.gameOn) {
+          this.timeElapsed++;
+          this.timerDisplay = this.formatTime(this.timeElapsed);
+        }
+      })
+    );
+    this.fetchAvailableMoves();
   }
 
   formatTime(totalSeconds: number): string {
@@ -87,58 +114,27 @@ export class MazeGameComponent implements OnChanges {
   }
 
   move(direction: string): void {
-    if (!this.mazeLayout || !this.playerPosition || !this.gameOn) return;
+    if (!this.availableMoves.includes(direction))
+      return;
 
     let newX = this.playerPosition.x;
     let newY = this.playerPosition.y;
 
     switch (direction) {
-      case 'up':
-        newX--;
-        break;
-      case 'down':
-        newX++;
-        break;
-      case 'left':
-        newY--;
-        break;
-      case 'right':
-        newY++;
-        break;
+      case 'up': newX--; break;
+      case 'down': newX++; break;
+      case 'left': newY--; break;
+      case 'right': newY++; break;
     }
 
-    // Check for boundaries and walls
-    if (
-      newX < 0 ||
-      newX >= this.mazeLayout.length ||
-      newY < 0 ||
-      newY >= this.mazeLayout[newX].length ||
-      this.mazeLayout[newX][newY] === 'X'
-    ) {
-      console.log('Move blocked by a wall or boundary');
-      return;
-    }
-
-    // Update the maze layout to remove the player from the old position
-    this.mazeLayout[this.playerPosition.x][this.playerPosition.y] = this.previousCell; // Store the cell under the player before moving
-
-    // Save the previous cell type before moving the player
+    // Update the player position
     this.previousCell = this.mazeLayout[newX][newY];
-    this.mazeLayout[newX][newY] = 'P'; // Mark the new player position with 'P'
+    this.mazeLayout[this.playerPosition.x][this.playerPosition.y] = 'O';
+    this.mazeLayout[newX][newY] = 'P';
+    this.playerPosition = { x: newX, y: newY };
 
-    // Update the player's position
-    this.playerPosition.x = newX;
-    this.playerPosition.y = newY;
-
-    this.mazeLayout = [...this.mazeLayout];
-
-    // Check if reached the end
-    if (this.previousCell === 'E') {
-      this.snackbar.open('Congratulations! You have reached the exit.', 'YAY!', {
-        duration: 3000
-      })
-      this.gameOn = false;
-    }
+    // Continue to fetch new moves from the server
+    this.fetchAvailableMoves();
   }
 
   getCellClass(cell: string, i: number, j: number): string {
@@ -158,6 +154,10 @@ export class MazeGameComponent implements OnChanges {
       case 'X': return 'wall';     // Walls of the maze
       default:  return 'open';     // Open paths
     }
+  }
+
+  isMoveAvailable(direction: string): boolean {
+    return !this.isBusy && this.gameOn && this.availableMoves?.includes(direction);
   }
 
   ngOnDestroy(): void {

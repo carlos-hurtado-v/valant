@@ -16,12 +16,12 @@
 
     <!-- Navigation controls -->
     <div class="controls">
-      <div class="control-button up"><button mat-raised-button (click)="move('up')" [disabled]="!gameOn">Up</button></div>
+      <div class="control-button up"><button mat-raised-button (click)="move('up')" [disabled]="!isMoveAvailable('up')">Up</button></div>
       <div class="middle-controls">
-        <div class="control-button left"><button mat-raised-button (click)="move('left')" [disabled]="!gameOn">Left</button></div>
-        <div class="control-button right"><button mat-raised-button (click)="move('right')" [disabled]="!gameOn">Right</button></div>
+        <div class="control-button left"><button mat-raised-button (click)="move('left')" [disabled]="!isMoveAvailable('left')">Left</button></div>
+        <div class="control-button right"><button mat-raised-button (click)="move('right')" [disabled]="!isMoveAvailable('right')">Right</button></div>
       </div>
-      <div class="control-button down"><button mat-raised-button (click)="move('down')" [disabled]="!gameOn">Down</button></div>
+      <div class="control-button down"><button mat-raised-button (click)="move('down')" [disabled]="!isMoveAvailable('down')">Down</button></div>
     </div>
   </div>
 </div>

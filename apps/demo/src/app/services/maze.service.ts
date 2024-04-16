@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, shareReplay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Maze } from '../models/maze.model';
+import { MazeMoveResult } from '../models/move-result.model';
 
 
 @Injectable({
@@ -30,6 +31,11 @@ export class MazeService {
       catchError(this.handleError)
     );
   }
+
+  getAvailableMoves(mazeId: number, x: number, y: number): Observable<MazeMoveResult> {
+    return this.http.post<MazeMoveResult>(`${this.baseUrl}/moves`, { mazeId, x, y })
+      .pipe(catchError(this.handleError));
+  }  
 
   private handleError(error: HttpErrorResponse) {
     return throwError(error.error);

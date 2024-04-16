@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ValantDemoApi.Contracts;
 using ValantDemoApi.Data;
 using ValantDemoApi.Data.Entities;
@@ -11,21 +13,33 @@ namespace ValantDemoApi.Services
 {
   public class MazeService : IMazeService
   {
-    protected MazeDbContext Context;
+    
+    private readonly MazeDbContext _context;
+    private readonly IMemoryCache _cache;
+    private readonly TimeSpan _cacheDuration = TimeSpan.FromHours(1); // Could be configurable
 
-    public MazeService(MazeDbContext context)
+    public MazeService(MazeDbContext context, IMemoryCache cache)
     {
-      Context = context;
+      _context = context;
+      _cache = cache;
     }
 
-    public async Task<Maze> GetMazeAsync(string name)
+    public async Task<Maze> GetMazeAsync(int id)
     {
-      return await Context.Mazes.FirstOrDefaultAsync(x => x.Name == name);
+      // Check if the maze is in the cache
+      if (_cache.TryGetValue(id, out Maze cachedMaze))
+        return cachedMaze;
+
+      cachedMaze = await _context.Mazes.FindAsync(id);
+      if (cachedMaze != null)
+        _cache.Set(id, cachedMaze, _cacheDuration);
+
+      return cachedMaze;
     }
 
     public async Task<IEnumerable<Maze>> GetMazesAsync()
     {
-      return await Context.Mazes.ToListAsync();
+      return await _context.Mazes.ToListAsync();
     }
 
     public async Task<Maze> CreateMazeAsync(string name, string definition)
@@ -36,8 +50,8 @@ namespace ValantDemoApi.Services
         Definition = definition
       };
 
-      Context.Mazes.Add(maze);
-      await Context.SaveChangesAsync();
+      _context.Mazes.Add(maze);
+      await _context.SaveChangesAsync();
 
       return maze;
     }
@@ -45,7 +59,7 @@ namespace ValantDemoApi.Services
     public async Task<MazeValidationResult> ValidateMaze(string name, string[] definition)
     {
       // Check if a maze with the same name already exists
-      var existing = await Context.Mazes.AnyAsync(x => x.Name == name);
+      var existing = await _context.Mazes.AnyAsync(x => x.Name == name);
       if (existing)
         return new MazeValidationResult(false, "Maze with the same name already exists.");
 
@@ -53,11 +67,11 @@ namespace ValantDemoApi.Services
       // Validate the maze definition
       var rawDefinition = definition.SelectMany(x => x.ToUpper()).ToList();
 
-      var entries = rawDefinition.Count(x => x == 'E');
+      var entries = rawDefinition.Count(x => x == 'S');
       if (entries != 1)
         return new MazeValidationResult(false, "Maze must have exactly one entry point.");
 
-      var exits = rawDefinition.Count(x => x == 'S');
+      var exits = rawDefinition.Count(x => x == 'E');
       if (exits != 1)
         return new MazeValidationResult(false, "Maze must have exactly one exit point.");
 
@@ -67,6 +81,34 @@ namespace ValantDemoApi.Services
 
       var isSolvable = IsSolvable(definition);
       return !isSolvable ? new MazeValidationResult(false, "Maze is not solvable.") : new MazeValidationResult(true);
+    }
+
+    public async Task<MazeMoveResult> GetAvailableMovesAsync(PlayerState state)
+    {
+      var result = new MazeMoveResult();
+      var maze = await GetMazeAsync(state.MazeId);
+      if (maze == null) return null;
+
+      var rows = maze.Definition.Split('\n');
+
+      // Check if the player has reached the exit
+      if (rows[state.X][state.Y] == 'E')
+      {
+        result.IsFinished = true;
+        return result;
+      }
+
+      // Ensure position is within bounds and check in all directions for available moves
+      if (state.X > 0 && rows[state.X - 1][state.Y] != 'X')
+        result.Moves.Add("up");
+      if (state.X < rows.Length - 1 && rows[state.X + 1][state.Y] != 'X')
+        result.Moves.Add("down");
+      if (state.Y > 0 && rows[state.X][state.Y - 1] != 'X')
+        result.Moves.Add("left");
+      if (state.Y < rows[state.X].Length - 1 && rows[state.X][state.Y + 1] != 'X')
+        result.Moves.Add("right");
+
+      return result;
     }
 
     private static bool IsSolvable(string[] maze)

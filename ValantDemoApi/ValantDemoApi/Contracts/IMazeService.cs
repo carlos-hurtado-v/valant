@@ -7,9 +7,10 @@ namespace ValantDemoApi.Contracts
 {
   public interface IMazeService
   {
-    Task<Maze> GetMazeAsync(string name);
+    Task<Maze> GetMazeAsync(int id);
     Task<IEnumerable<Maze>> GetMazesAsync();
     Task<Maze> CreateMazeAsync(string name, string definition);
     Task<MazeValidationResult> ValidateMaze(string name, string[] definition);
+    Task<MazeMoveResult> GetAvailableMovesAsync(PlayerState state);
   }
 }

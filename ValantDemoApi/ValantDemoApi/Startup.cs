@@ -30,6 +30,7 @@ namespace ValantDemoApi
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "ValantDemoApi", Version = "v1" });
       });
 
+      services.AddMemoryCache();
       services.AddDbContext<MazeDbContext>(opt => opt.UseSqlite("Data Source=mazes.db"));
       services.AddScoped<IMazeService, MazeService>();
     }

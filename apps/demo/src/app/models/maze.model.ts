@@ -1,5 +1,5 @@
 export interface Maze {
-    mazeId?: number;
+    id?: number;
     name?: string;
     definition?: string;
 }

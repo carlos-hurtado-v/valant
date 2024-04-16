@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MazeService } from '../../services/maze.service';
 import { MatSnackBar } from '@angular/material/snack-bar';

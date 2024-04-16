@@ -5,6 +5,10 @@ namespace ValantDemoApi.Data
 {
   public class MazeDbContext : DbContext
   {
+    public MazeDbContext()
+    {
+    }
+
     public MazeDbContext(DbContextOptions<MazeDbContext> options) : base(options)
     {
     }
